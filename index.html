@@ -1,159 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Melbourne Testbed Devices Map</title>
-  <link rel="stylesheet" href="https://js.arcgis.com/4.19/esri/themes/light/main.css">
-  <script src="https://js.arcgis.com/4.19/"></script>
-  <style>
-    html, body, #viewDiv {
-      padding: 0;
-      margin: 0;
-      height: 100%;
-      width: 100%;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melbourne Testbed Devices Map</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.19/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.19/"></script>
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
 </head>
+
 <body>
 
-<div id="viewDiv"></div>
+    <div id="viewDiv"></div>
 
-<script>
-  require([
-    "esri/Map",
-    "esri/views/MapView",
-    "esri/layers/FeatureLayer",
-    "esri/widgets/BasemapToggle",
-    "esri/widgets/LayerList",
-    "esri/widgets/Zoom",
-    "esri/widgets/Measurement",
-    "esri/widgets/Expand",
-    "esri/widgets/Search",
-    "esri/widgets/Legend",
-    "esri/Graphic"
-  ], function(Map, MapView, FeatureLayer, BasemapToggle, LayerList, Zoom, Measurement, Expand, Search, Legend, Graphic) {
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/layers/FeatureLayer",
+            "esri/widgets/BasemapToggle",
+            "esri/widgets/LayerList",
+            "esri/widgets/Zoom",
+            "esri/widgets/Measurement",
+            "esri/widgets/Expand",
+            "esri/widgets/Search",
+            "esri/widgets/Legend",
+            "esri/Graphic"
+        ], function (Map, MapView, FeatureLayer, BasemapToggle, LayerList, Zoom, Measurement, Expand, Search, Legend, Graphic) {
 
-    // Create the map
-    var map = new Map({
-      basemap: "streets-navigation-vector" // Initial basemap
-    });
+            // Create the map
+            var map = new Map({
+                basemap: "streets-navigation-vector" // Initial basemap
+            });
 
-    // Create the view
-    var view = new MapView({
-      container: "viewDiv", // The ID of the div element to hold the map
-      map: map, // The map object created above
-      center: [144.9655513, -37.802772], // Longitude, latitude of the initial view
-      zoom: 13 // Initial zoom level
-    });
+            // Create the view
+            var view = new MapView({
+                container: "viewDiv", // The ID of the div element to hold the map
+                map: map, // The map object created above
+                center: [144.9655513, -37.802772], // Longitude, latitude of the initial view
+                zoom: 13 // Initial zoom level
+            });
 
-    // Fetch data from the API
-    fetch("https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets/melbourne-testbed-devices-reference-list/records?limit=100")
-      .then(response => response.json()) // Convert the response to JSON
-      .then(data => {
-        const features = data.results.map(record => {
-          return new Graphic({
-            geometry: {
-              type: "point",
-              longitude: record.lat_long.lon,
-              latitude: record.lat_long.lat
-            },
-            attributes: {
-              sensor_name: record.sensor_name,
-              sensor_id: record.sensor_id,
-              sensor_type: record.sensor_type,
-              type_measure: record.type_measure,
-              sensor_location: record.sensor_location,
-              location_name: record.location_name,
-              location_picture_hyperlink: record.location_picture_hyperlink
-            }
-          });
-        });
+            // Fetch data from the API
+            fetch("https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets/melbourne-testbed-devices-reference-list/records?limit=100")
+                .then(response => response.json()) // Convert the response to JSON
+                .then(data => {
+                    const features = data.results.map(record => {
+                        return new Graphic({
+                            geometry: {
+                                type: "point",
+                                longitude: record.lat_long.lon,
+                                latitude: record.lat_long.lat
+                            },
+                            attributes: {
+                                sensor_name: record.sensor_name,
+                                sensor_id: record.sensor_id,
+                                sensor_type: record.sensor_type,
+                                type_measure: record.type_measure,
+                                sensor_location: record.sensor_location,
+                                location_name: record.location_name,
+                                location_picture_hyperlink: record.location_picture_hyperlink
+                            }
+                        });
+                    });
 
-        // Create FeatureLayer
-        var featureLayer = new FeatureLayer({
-          source: features,  // Array of graphics
-          objectIdField: "sensor_id", // Unique ID for each feature
-          fields: [
-            { name: "sensor_name", type: "string" },
-            { name: "sensor_id", type: "string" },
-            { name: "sensor_type", type: "string" },
-            { name: "type_measure", type: "string" },
-            { name: "sensor_location", type: "string" },
-            { name: "location_name", type: "string" },
-            { name: "location_picture_hyperlink", type: "string" }
-          ],
-          renderer: {
-            type: "simple",  // SimpleRenderer
-            symbol: {
-              type: "simple-marker",  // SimpleMarkerSymbol
-              color: "blue",
-              size: "8px"
-            }
-          },
-          popupTemplate: {
-            title: "{sensor_name}",
-            content: `
+                    // Create FeatureLayer
+                    var featureLayer = new FeatureLayer({
+                        source: features,  // Array of graphics
+                        objectIdField: "sensor_id", // Unique ID for each feature
+                        fields: [
+                            { name: "sensor_name", type: "string" },
+                            { name: "sensor_id", type: "string" },
+                            { name: "sensor_type", type: "string" },
+                            { name: "type_measure", type: "string" },
+                            { name: "sensor_location", type: "string" },
+                            { name: "location_name", type: "string" },
+                            { name: "location_picture_hyperlink", type: "string" }
+                        ],
+                        renderer: {
+                            type: "simple",  // SimpleRenderer
+                            symbol: {
+                                type: "simple-marker",  // SimpleMarkerSymbol
+                                color: "blue",
+                                size: "8px"
+                            }
+                        },
+                        popupTemplate: {
+                            title: "{sensor_name}",
+                            content: `
               <b>Type:</b> {sensor_type}<br>
               <b>Measure:</b> {type_measure}<br>
               <b>Location:</b> {sensor_location}<br>
               <b>Picture:</b> <a href="{location_picture_hyperlink}" target="_blank">View</a>
             `
-          }
+                        }
+                    });
+
+                    map.add(featureLayer); // Add the FeatureLayer to the map
+                });
+
+            // Add BasemapToggle widget
+            var basemapToggle = new BasemapToggle({
+                view: view,
+                nextBasemap: "hybrid"
+            });
+            view.ui.add(basemapToggle, "top-right");
+
+            // Add LayerList widget
+            var layerList = new LayerList({
+                view: view
+            });
+            view.ui.add(layerList, "top-right");
+
+            // Add Zoom widget
+            var zoom = new Zoom({
+                view: view
+            });
+            view.ui.add(zoom, "top-left");
+
+            // Add Measurement widget
+            var measurement = new Measurement({
+                view: view,
+                activeTool: "distance"
+            });
+            var measurementExpand = new Expand({
+                view: view,
+                content: measurement
+            });
+            view.ui.add(measurementExpand, "top-right");
+
+            // Add Search widget
+            var search = new Search({
+                view: view
+            });
+            view.ui.add(search, "top-right");
+
+            // Add Legend widget
+            var legend = new Legend({
+                view: view
+            });
+            var legendExpand = new Expand({
+                view: view,
+                content: legend
+            });
+            view.ui.add(legendExpand, "bottom-left");
+
         });
-
-        map.add(featureLayer); // Add the FeatureLayer to the map
-      });
-
-    // Add BasemapToggle widget
-    var basemapToggle = new BasemapToggle({
-      view: view,
-      nextBasemap: "hybrid"
-    });
-    view.ui.add(basemapToggle, "top-right");
-
-    // Add LayerList widget
-    var layerList = new LayerList({
-      view: view
-    });
-    view.ui.add(layerList, "top-right");
-
-    // Add Zoom widget
-    var zoom = new Zoom({
-      view: view
-    });
-    view.ui.add(zoom, "top-left");
-
-    // Add Measurement widget
-    var measurement = new Measurement({
-      view: view,
-      activeTool: "distance"
-    });
-    var measurementExpand = new Expand({
-      view: view,
-      content: measurement
-    });
-    view.ui.add(measurementExpand, "top-right");
-
-    // Add Search widget
-    var search = new Search({
-      view: view
-    });
-    view.ui.add(search, "top-right");
-
-    // Add Legend widget
-    var legend = new Legend({
-      view: view
-    });
-    var legendExpand = new Expand({
-      view: view,
-      content: legend
-    });
-    view.ui.add(legendExpand, "bottom-left");
-
-  });
-</script>
+    </script>
 
 </body>
-</html>
 
+</html>
