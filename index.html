@@ -122,22 +122,17 @@
             });
             view.ui.add(layerList, "top-right");
 
-            // Add Zoom widget
-            var zoom = new Zoom({
-                view: view
-            });
-            view.ui.add(zoom, "top-left");
+          // Add Measurement widget
+          var measurement = new Measurement({
+               view: view
+          });
+          var measurementExpand = new Expand({
+               view: view,
+          content: measurement
+           });
+           view.ui.add(measurementExpand, "top-right");
 
-            // Add Measurement widget
-            var measurement = new Measurement({
-                view: view,
-                activeTool: "distance"
-            });
-            var measurementExpand = new Expand({
-                view: view,
-                content: measurement
-            });
-            view.ui.add(measurementExpand, "top-right");
+
 
             // Add Search widget
             var search = new Search({
