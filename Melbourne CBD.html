@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Melbourne Testbed Devices Map</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.19/esri/themes/light/main.css">
+  <script src="https://js.arcgis.com/4.19/"></script>
+  <style>
+    html, body, #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<div id="viewDiv"></div>
+
+<script>
+  require([
+    "esri/Map",
+    "esri/views/MapView",
+    "esri/layers/FeatureLayer",
+    "esri/Graphic"
+  ], function(Map, MapView, FeatureLayer, Graphic) {
+
+    // Create the map
+    var map = new Map({
+      basemap: "streets-navigation-vector"
+    });
+
+    // Create the view
+    var view = new MapView({
+      container: "viewDiv",
+      map: map,
+      center: [144.9655513, -37.802772], // Longitude, latitude
+      zoom: 13
+    });
+
+    // Fetch data from the API
+    fetch("https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets/melbourne-testbed-devices-reference-list/records?limit=100")
+      .then(response => response.json())
+      .then(data => {
+        const features = data.results.map(record => {
+          return new Graphic({
+            geometry: {
+              type: "point",
+              longitude: record.lat_long.lon,
+              latitude: record.lat_long.lat
+            },
+            attributes: {
+              sensor_name: record.sensor_name,
+              sensor_id: record.sensor_id,
+              sensor_type: record.sensor_type,
+              type_measure: record.type_measure,
+              sensor_location: record.sensor_location,
+              location_name: record.location_name,
+              location_picture_hyperlink: record.location_picture_hyperlink
+            }
+          });
+        });
+
+        // Create FeatureLayer
+        var featureLayer = new FeatureLayer({
+          source: features,  // autocast as an array of esri/Graphic
+          objectIdField: "sensor_id",
+          fields: [
+            { name: "sensor_name", type: "string" },
+            { name: "sensor_id", type: "string" },
+            { name: "sensor_type", type: "string" },
+            { name: "type_measure", type: "string" },
+            { name: "sensor_location", type: "string" },
+            { name: "location_name", type: "string" },
+            { name: "location_picture_hyperlink", type: "string" }
+          ],
+          renderer: {
+            type: "simple",  // autocast as esri/renderers/SimpleRenderer
+            symbol: {
+              type: "simple-marker",  // autocast as esri/symbols/SimpleMarkerSymbol
+              color: "blue",
+              size: "8px"
+            }
+          },
+          popupTemplate: {
+            title: "{sensor_name}",
+            content: `
+              <b>Type:</b> {sensor_type}<br>
+              <b>Measure:</b> {type_measure}<br>
+              <b>Location:</b> {sensor_location}<br>
+              <b>Picture:</b> <a href="{location_picture_hyperlink}" target="_blank">View</a>
+            `
+          }
+        });
+
+        map.add(featureLayer);
+      });
+
+  });
+</script>
+
+</body>
+</html>
