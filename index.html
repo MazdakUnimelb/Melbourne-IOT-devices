@@ -24,25 +24,32 @@
     "esri/Map",
     "esri/views/MapView",
     "esri/layers/FeatureLayer",
+    "esri/widgets/BasemapToggle",
+    "esri/widgets/LayerList",
+    "esri/widgets/Zoom",
+    "esri/widgets/Measurement",
+    "esri/widgets/Expand",
+    "esri/widgets/Search",
+    "esri/widgets/Legend",
     "esri/Graphic"
-  ], function(Map, MapView, FeatureLayer, Graphic) {
+  ], function(Map, MapView, FeatureLayer, BasemapToggle, LayerList, Zoom, Measurement, Expand, Search, Legend, Graphic) {
 
     // Create the map
     var map = new Map({
-      basemap: "streets-navigation-vector"
+      basemap: "streets-navigation-vector" // Initial basemap
     });
 
     // Create the view
     var view = new MapView({
-      container: "viewDiv",
-      map: map,
-      center: [144.9655513, -37.802772], // Longitude, latitude
-      zoom: 13
+      container: "viewDiv", // The ID of the div element to hold the map
+      map: map, // The map object created above
+      center: [144.9655513, -37.802772], // Longitude, latitude of the initial view
+      zoom: 13 // Initial zoom level
     });
 
     // Fetch data from the API
     fetch("https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets/melbourne-testbed-devices-reference-list/records?limit=100")
-      .then(response => response.json())
+      .then(response => response.json()) // Convert the response to JSON
       .then(data => {
         const features = data.results.map(record => {
           return new Graphic({
@@ -65,8 +72,8 @@
 
         // Create FeatureLayer
         var featureLayer = new FeatureLayer({
-          source: features,  // autocast as an array of esri/Graphic
-          objectIdField: "sensor_id",
+          source: features,  // Array of graphics
+          objectIdField: "sensor_id", // Unique ID for each feature
           fields: [
             { name: "sensor_name", type: "string" },
             { name: "sensor_id", type: "string" },
@@ -77,9 +84,9 @@
             { name: "location_picture_hyperlink", type: "string" }
           ],
           renderer: {
-            type: "simple",  // autocast as esri/renderers/SimpleRenderer
+            type: "simple",  // SimpleRenderer
             symbol: {
-              type: "simple-marker",  // autocast as esri/symbols/SimpleMarkerSymbol
+              type: "simple-marker",  // SimpleMarkerSymbol
               color: "blue",
               size: "8px"
             }
@@ -95,11 +102,58 @@
           }
         });
 
-        map.add(featureLayer);
+        map.add(featureLayer); // Add the FeatureLayer to the map
       });
+
+    // Add BasemapToggle widget
+    var basemapToggle = new BasemapToggle({
+      view: view,
+      nextBasemap: "hybrid"
+    });
+    view.ui.add(basemapToggle, "top-right");
+
+    // Add LayerList widget
+    var layerList = new LayerList({
+      view: view
+    });
+    view.ui.add(layerList, "top-right");
+
+    // Add Zoom widget
+    var zoom = new Zoom({
+      view: view
+    });
+    view.ui.add(zoom, "top-left");
+
+    // Add Measurement widget
+    var measurement = new Measurement({
+      view: view,
+      activeTool: "distance"
+    });
+    var measurementExpand = new Expand({
+      view: view,
+      content: measurement
+    });
+    view.ui.add(measurementExpand, "top-right");
+
+    // Add Search widget
+    var search = new Search({
+      view: view
+    });
+    view.ui.add(search, "top-right");
+
+    // Add Legend widget
+    var legend = new Legend({
+      view: view
+    });
+    var legendExpand = new Expand({
+      view: view,
+      content: legend
+    });
+    view.ui.add(legendExpand, "bottom-left");
 
   });
 </script>
 
 </body>
 </html>
+
